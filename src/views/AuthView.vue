@@ -38,8 +38,8 @@ async function submit() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">Food Planner</h1>
-        <p class="text-gray-500 mt-1">Plan your weekly meals together</p>
+        <h1 class="text-2xl font-bold text-gray-900">Matplanering</h1>
+        <p class="text-gray-500 mt-1">Planera veckans mat tillsammans</p>
       </div>
 
       <!-- Card -->

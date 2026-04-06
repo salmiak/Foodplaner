@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*.png'],
       manifest: {
-        name: 'Food Planner',
-        short_name: 'FoodPlan',
-        description: 'Weekly meal planning for your household',
+        name: 'Matplanering',
+        short_name: 'Matplan',
+        description: 'Veckovis matplanering för ditt hushåll',
         theme_color: '#16a34a',
         background_color: '#ffffff',
         display: 'standalone',
