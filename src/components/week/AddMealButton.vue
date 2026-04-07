@@ -38,28 +38,27 @@ async function submit() {
 
 <template>
   <button
-    class="w-full flex items-center gap-1.5 px-2 py-2 rounded-xl text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors text-sm min-h-[44px]"
+    class="w-full flex items-center justify-center mt-1 p-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:border-primary-400 hover:text-primary-500 hover:bg-primary-50 transition-colors min-h-[40px]"
     @click="open = true"
   >
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
     </svg>
-    Add meal
   </button>
 
-  <BaseModal v-if="open" title="Add meal" @close="open = false">
+  <BaseModal v-if="open" title="Lägg till måltid" @close="open = false">
     <div class="p-4 space-y-4">
       <BaseInput
         v-model="title"
-        label="Meal name"
-        placeholder="e.g. Pasta with tomato sauce"
+        label="Namn på måltid"
+        placeholder="t.ex. Pasta med tomatsås"
         @keyup.enter="submit"
       />
     </div>
     <template #footer>
       <div class="flex gap-2">
-        <BaseButton variant="secondary" class="flex-1" @click="open = false">Cancel</BaseButton>
-        <BaseButton class="flex-1" :loading="saving" @click="submit">Add</BaseButton>
+        <BaseButton variant="secondary" class="flex-1" @click="open = false">Avbryt</BaseButton>
+        <BaseButton class="flex-1" :loading="saving" @click="submit">Lägg till</BaseButton>
       </div>
     </template>
   </BaseModal>

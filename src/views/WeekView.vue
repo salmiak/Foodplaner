@@ -110,7 +110,7 @@ onMounted(initialize)
 <template>
   <div class="flex flex-col h-screen bg-gray-50">
     <AppHeader :present-users="presentUsers">
-      <template #actions>
+      <template #center>
         <WeekSelector />
       </template>
     </AppHeader>
