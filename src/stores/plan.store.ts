@@ -53,12 +53,13 @@ export const usePlanStore = defineStore('plan', () => {
     const authStore = useAuthStore()
     if (!authStore.userId) throw new Error('Not authenticated')
 
-    // Create the plan
-    const { data: plan, error: planError } = await supabase
+    // Generate ID client-side so we can insert into plan_members before fetching
+    // (avoids RLS chicken-and-egg: SELECT policy requires being a member)
+    const planId = crypto.randomUUID()
+
+    const { error: planError } = await supabase
       .from('plans')
-      .insert({ name })
-      .select()
-      .single()
+      .insert({ id: planId, name })
 
     if (planError) throw planError
 
@@ -66,12 +67,21 @@ export const usePlanStore = defineStore('plan', () => {
     const { error: memberError } = await supabase
       .from('plan_members')
       .insert({
-        plan_id: plan.id,
+        plan_id: planId,
         user_id: authStore.userId,
         role: 'owner',
       })
 
     if (memberError) throw memberError
+
+    // Now fetch the plan (SELECT policy passes because user is now a member)
+    const { data: plan, error: fetchError } = await supabase
+      .from('plans')
+      .select('*')
+      .eq('id', planId)
+      .single()
+
+    if (fetchError) throw fetchError
 
     currentPlan.value = plan
     userPlans.value.push(plan)
