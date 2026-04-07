@@ -25,6 +25,7 @@ const recipeStore = useRecipeStore()
 const loading = ref(true)
 const initError = ref<string | null>(null)
 const presentUsers = ref<PresenceUser[]>([])
+const realtime = useRealtime()
 
 async function initialize() {
   loading.value = true
@@ -68,8 +69,7 @@ async function initialize() {
       recipeStore.fetchRecipes(planId),
     ])
 
-    const realtime = useRealtime(planId)
-    realtime.subscribe()
+    realtime.subscribe(planId)
 
     watch(realtime.presentUsers, (users) => {
       presentUsers.value = users as PresenceUser[]

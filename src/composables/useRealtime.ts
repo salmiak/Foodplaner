@@ -7,15 +7,19 @@ import { useAuthStore } from '@/stores/auth.store'
 import { stringToColor, getInitials } from '@/lib/utils'
 import type { PresenceUser } from '@/types/app.types'
 
-export function useRealtime(planId: string) {
+export function useRealtime() {
   const channel = ref<RealtimeChannel | null>(null)
   const presentUsers = ref<PresenceUser[]>([])
   const mealStore = useMealStore()
   const recipeStore = useRecipeStore()
   const authStore = useAuthStore()
 
-  function subscribe() {
-    if (channel.value) return
+  function subscribe(planId: string) {
+    // Unsubscribe from any existing channel first (e.g. re-init or plan change)
+    if (channel.value) {
+      channel.value.unsubscribe()
+      channel.value = null
+    }
 
     channel.value = supabase
       .channel(`plan:${planId}`)
