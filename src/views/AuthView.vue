@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.store'
+import { supabaseConfigured } from '@/lib/supabase'
 
 const authStore = useAuthStore()
 
@@ -11,12 +12,18 @@ const sent = ref(false)
 const error = ref<string | null>(null)
 
 async function submit() {
+  if (!email.value.trim()) return
   error.value = null
   try {
-    await authStore.sendMagicLink(email.value)
+    await authStore.sendMagicLink(email.value.trim())
     sent.value = true
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Something went wrong'
+    const msg = err instanceof Error ? err.message : ''
+    if (!msg || msg.toLowerCase().includes('load failed') || msg.toLowerCase().includes('fetch')) {
+      error.value = 'Kunde inte nå servern. Kontrollera att Supabase-miljövariabler är konfigurerade i Railway och att en ny deploy har körts.'
+    } else {
+      error.value = msg
+    }
   }
 }
 </script>
@@ -58,8 +65,13 @@ async function submit() {
           </button>
         </div>
 
+        <!-- Misconfiguration warning -->
+        <div v-if="!supabaseConfigured" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-xs text-yellow-800">
+          <strong>Konfiguration saknas:</strong> Supabase-miljövariablerna är inte satta. Lägg till <code>VITE_SUPABASE_URL</code> och <code>VITE_SUPABASE_ANON_KEY</code> i Railway och kör en ny deploy.
+        </div>
+
         <!-- Email form -->
-        <div v-else class="space-y-4">
+        <div v-if="!sent" class="space-y-4">
           <h2 class="font-semibold text-gray-900">Logga in</h2>
 
           <BaseInput
