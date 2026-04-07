@@ -6,6 +6,7 @@ import BottomNav from '@/components/layout/BottomNav.vue'
 import WeekSelector from '@/components/layout/WeekSelector.vue'
 import WeekGrid from '@/components/week/WeekGrid.vue'
 import BaseSpinner from '@/components/ui/BaseSpinner.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { usePlanStore } from '@/stores/plan.store'
 import { useWeekStore } from '@/stores/week.store'
 import { useMealStore } from '@/stores/meal.store'
@@ -22,20 +23,20 @@ const mealStore = useMealStore()
 const recipeStore = useRecipeStore()
 
 const loading = ref(true)
+const initError = ref<string | null>(null)
 const presentUsers = ref<PresenceUser[]>([])
-let realtimeCleanup: (() => void) | null = null
 
 async function initialize() {
   loading.value = true
+  initError.value = null
   try {
-    // Get or create user's plan
     await planStore.fetchUserPlans()
 
     let planId = route.params.planId as string
 
     if (!planId) {
       if (planStore.userPlans.length === 0) {
-        const plan = await planStore.createPlan('My Meal Plan')
+        const plan = await planStore.createPlan('Min matplan')
         planId = plan.id
       } else {
         planId = planStore.userPlans[0].id
@@ -46,7 +47,6 @@ async function initialize() {
       await planStore.fetchPlan(planId)
     }
 
-    // Determine year/week from route or current
     const year = route.params.year
       ? parseInt(route.params.year as string)
       : getCurrentISOWeek().year
@@ -54,7 +54,6 @@ async function initialize() {
       ? parseInt(route.params.week as string)
       : getCurrentISOWeek().weekNumber
 
-    // Redirect to canonical URL if needed
     if (!route.params.year) {
       router.replace({
         name: 'week',
@@ -64,32 +63,25 @@ async function initialize() {
 
     await weekStore.loadWeek(planId, year, weekNumber)
 
-    // Load data in parallel
     await Promise.all([
       mealStore.fetchMeals(weekStore.weekId!),
       recipeStore.fetchRecipes(planId),
     ])
 
-    // Set up realtime
     const realtime = useRealtime(planId)
     realtime.subscribe()
-    presentUsers.value = realtime.presentUsers.value as PresenceUser[]
 
-    // Watch present users
-    const stopWatch = watch(realtime.presentUsers, (users) => {
+    watch(realtime.presentUsers, (users) => {
       presentUsers.value = users as PresenceUser[]
     })
-
-    realtimeCleanup = () => {
-      stopWatch()
-      realtime.unsubscribe()
-    }
+  } catch (err) {
+    console.error('WeekView init error:', err)
+    initError.value = err instanceof Error ? err.message : 'Något gick fel vid inläsning.'
   } finally {
     loading.value = false
   }
 }
 
-// Re-load when route params change (week navigation)
 watch(
   () => [route.params.year, route.params.week],
   async ([year, week]) => {
@@ -115,18 +107,35 @@ onMounted(initialize)
       </template>
     </AppHeader>
 
+    <!-- Loading -->
     <div v-if="loading" class="flex-1 flex items-center justify-center">
       <BaseSpinner size="lg" />
     </div>
 
+    <!-- Error -->
+    <div v-else-if="initError" class="flex-1 flex flex-col items-center justify-center p-8 text-center gap-4">
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+        <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="font-semibold text-gray-900 mb-1">Kunde inte ladda planen</p>
+        <p class="text-sm text-gray-500 mb-1">{{ initError }}</p>
+        <p class="text-xs text-gray-400">Kontrollera att Supabase-miljövariablerna är konfigurerade och att databasmigrationerna har körts.</p>
+      </div>
+      <BaseButton @click="initialize">Försök igen</BaseButton>
+    </div>
+
+    <!-- Week grid -->
     <WeekGrid
       v-else-if="planStore.currentPlan"
       :plan-id="planStore.currentPlan.id"
-      class="flex-1 overflow-hidden"
+      class="flex-1 min-h-0"
     />
 
-    <!-- Bottom nav spacer -->
-    <div class="h-[calc(56px+env(safe-area-inset-bottom))]" />
+    <!-- Spacer for bottom nav -->
+    <div class="h-[calc(56px+env(safe-area-inset-bottom))] flex-shrink-0" />
     <BottomNav />
   </div>
 </template>

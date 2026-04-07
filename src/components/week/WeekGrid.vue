@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DayColumn from './DayColumn.vue'
 import MealCard from '@/components/meal/MealCard.vue'
 import MealDetailModal from '@/components/meal/MealDetailModal.vue'
@@ -8,7 +8,6 @@ import BaseSpinner from '@/components/ui/BaseSpinner.vue'
 import { useMealStore } from '@/stores/meal.store'
 import { useWeekStore } from '@/stores/week.store'
 import { DAY_NAMES_SHORT } from '@/types/app.types'
-import { ref } from 'vue'
 import type { Meal } from '@/types/app.types'
 
 const props = defineProps<{ planId: string }>()
@@ -31,41 +30,38 @@ const unassignedMeals = computed(() => mealStore.mealsByDay['null'] ?? [])
 </script>
 
 <template>
-  <div class="flex-1 overflow-hidden flex flex-col">
-    <!-- Loading state -->
+  <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+
+    <!-- Loading -->
     <div v-if="mealStore.loading" class="flex-1 flex items-center justify-center">
       <BaseSpinner size="lg" />
     </div>
 
     <template v-else>
-      <!-- Horizontal scroll container for 7 days -->
-      <div class="flex-1 overflow-x-auto overflow-y-auto">
-        <div class="flex h-full" style="min-width: max-content;">
-          <!-- Day columns -->
+      <!-- Day columns — horizontal scroll on mobile -->
+      <div class="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
+        <div class="flex min-h-full" style="min-width: max-content;">
           <DayColumn
             v-for="day in days"
             :key="day.dayOfWeek"
             v-bind="day"
             :plan-id="planId"
-            class="w-[150px] sm:w-auto sm:flex-1 border-r border-gray-100 last:border-r-0"
+            class="w-[130px] sm:w-40 border-r border-gray-100 last:border-r-0 flex-shrink-0"
           />
         </div>
       </div>
 
-      <!-- Unassigned meals section -->
-      <div v-if="unassignedMeals.length || true" class="border-t border-gray-100 bg-gray-50">
-        <div class="px-4 py-2">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Unscheduled</p>
-          <div class="flex gap-2 flex-wrap">
-            <MealCard
-              v-for="meal in unassignedMeals"
-              :key="meal.id"
-              :meal="meal"
-              class="w-full sm:w-auto sm:min-w-[180px] sm:max-w-[240px]"
-              @open="activeMeal = meal"
-            />
-            <AddMealButton :plan-id="planId" :day-of-week="null" />
-          </div>
+      <!-- Unscheduled meals -->
+      <div v-if="unassignedMeals.length" class="flex-shrink-0 border-t border-gray-100 bg-gray-50 px-4 py-2">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Ej schemalagda</p>
+        <div class="flex gap-2 flex-wrap">
+          <MealCard
+            v-for="meal in unassignedMeals"
+            :key="meal.id"
+            :meal="meal"
+            class="w-full sm:w-auto sm:min-w-[180px] sm:max-w-[240px]"
+            @open="activeMeal = meal"
+          />
         </div>
       </div>
     </template>
