@@ -199,9 +199,12 @@ export const useMealStore = defineStore('meal', () => {
     } else if (payload.eventType === 'UPDATE') {
       const index = meals.value.findIndex((m) => m.id === (payload.new as Meal).id)
       if (index >= 0) {
+        // Realtime payloads don't include joined data (recipes), so preserve the local copy
+        const { recipes, ...dbFields } = payload.new as Meal
+        void recipes
         meals.value[index] = {
           ...meals.value[index],
-          ...(payload.new as Meal),
+          ...dbFields,
         }
       }
     } else if (payload.eventType === 'DELETE') {

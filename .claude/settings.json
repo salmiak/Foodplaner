@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE 'src/.*\\.(ts|vue)$' && cd /home/user/Foodplaner && npm test 2>&1 || true",
+            "async": true,
+            "statusMessage": "Running tests..."
+          }
+        ]
+      }
+    ]
+  }
+}
