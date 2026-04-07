@@ -40,7 +40,7 @@ const unassignedMeals = computed(() => mealStore.mealsByDay['null'] ?? [])
     <template v-else>
       <!-- Day columns — horizontal scroll on mobile -->
       <div class="flex-1 min-h-0 overflow-x-auto overflow-y-auto">
-        <div class="flex min-h-full" style="min-width: max-content;">
+        <div class="flex" style="min-width: max-content; min-height: max(100%, 300px);">
           <DayColumn
             v-for="day in days"
             :key="day.dayOfWeek"

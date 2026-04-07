@@ -18,7 +18,7 @@ const activeMeal = ref<Meal | null>(null)
 </script>
 
 <template>
-  <div class="flex flex-col min-w-[140px] sm:min-w-0">
+  <div class="flex flex-col h-full min-w-[140px] sm:min-w-0">
     <!-- Day header -->
     <div
       class="sticky top-[57px] z-10 bg-gray-50 px-2 py-2 border-b border-gray-100 flex-shrink-0"
