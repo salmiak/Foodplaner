@@ -95,7 +95,7 @@ describe('applyRealtimeEvent', () => {
       schema: 'public',
       table: 'meals',
       commit_timestamp: '',
-      errors: null,
+      errors: [],
     })
     expect(store.meals).toHaveLength(1)
     expect(store.meals[0].id).toBe('new-1')
@@ -111,7 +111,7 @@ describe('applyRealtimeEvent', () => {
       schema: 'public',
       table: 'meals',
       commit_timestamp: '',
-      errors: null,
+      errors: [],
     })
     expect(store.meals).toHaveLength(1)
   })
@@ -126,7 +126,7 @@ describe('applyRealtimeEvent', () => {
       schema: 'public',
       table: 'meals',
       commit_timestamp: '',
-      errors: null,
+      errors: [],
     })
     expect(store.meals[0].title).toBe('New title')
   })
@@ -145,7 +145,7 @@ describe('applyRealtimeEvent', () => {
       schema: 'public',
       table: 'meals',
       commit_timestamp: '',
-      errors: null,
+      errors: [],
     })
     expect(store.meals[0].recipes).toHaveLength(1)
   })
@@ -160,7 +160,7 @@ describe('applyRealtimeEvent', () => {
       schema: 'public',
       table: 'meals',
       commit_timestamp: '',
-      errors: null,
+      errors: [],
     })
     expect(store.meals).toHaveLength(1)
     expect(store.meals[0].id).toBe('meal-2')
