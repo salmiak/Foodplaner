@@ -38,7 +38,7 @@ const activeMeal = ref<Meal | null>(null)
     </div>
 
     <!-- Meal list -->
-    <div class="flex-1 p-2 space-y-2">
+    <div class="p-2 space-y-2 min-h-[80px]">
       <MealCard
         v-for="meal in meals"
         :key="meal.id"
