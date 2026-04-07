@@ -38,12 +38,13 @@ async function submit() {
 
 <template>
   <button
-    class="w-full flex items-center justify-center mt-1 p-2 rounded-xl border border-dashed border-gray-200 text-gray-400 hover:border-primary-400 hover:text-primary-500 hover:bg-primary-50 transition-colors min-h-[40px]"
+    class="w-full flex items-center justify-center gap-1 mt-1 px-2 py-2 rounded-xl border border-dashed border-gray-300 text-gray-500 bg-white hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors min-h-[44px] text-xs font-medium"
     @click="open = true"
   >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
     </svg>
+    Lägg till
   </button>
 
   <BaseModal v-if="open" title="Lägg till måltid" @close="open = false">
