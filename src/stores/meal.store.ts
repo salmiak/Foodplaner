@@ -165,29 +165,17 @@ export const useMealStore = defineStore('meal', () => {
   }
 
   async function transferMeal(mealId: string, direction: 'prev' | 'next') {
-    const { data: { session } } = await supabase.auth.getSession()
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transfer-meal`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ meal_id: mealId, direction }),
-      },
-    )
+    const { data, error } = await supabase.functions.invoke('transfer-meal', {
+      body: { meal_id: mealId, direction },
+    })
 
-    if (!response.ok) {
-      const err = await response.json()
-      throw new Error(err.error || 'Transfer failed')
-    }
+    if (error) throw new Error(error.message || 'Transfer failed')
 
     // Remove meal from current view (it's now in another week)
     const index = meals.value.findIndex((m) => m.id === mealId)
     if (index >= 0) meals.value.splice(index, 1)
 
-    return response.json()
+    return data
   }
 
   function applyRealtimeEvent(payload: RealtimePostgresChangesPayload<Meal>) {
