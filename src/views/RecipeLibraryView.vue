@@ -21,6 +21,7 @@ const planStore = usePlanStore()
 const search = ref('')
 const showCreateForm = ref(false)
 const selectedRecipe = ref<Recipe | null>(null)
+const editing = ref(false)
 
 const planId = computed(() => (route.params.planId as string) || planStore.currentPlan?.id || '')
 
@@ -37,10 +38,25 @@ function getImageUrl(path: string) {
   return recipeStore.getImageUrl(path)
 }
 
+function openRecipe(recipe: Recipe) {
+  selectedRecipe.value = recipe
+  editing.value = false
+}
+
+function closeDetail() {
+  selectedRecipe.value = null
+  editing.value = false
+}
+
+function onRecipeSaved(recipe: Recipe) {
+  selectedRecipe.value = recipe
+  editing.value = false
+}
+
 async function deleteRecipe(recipe: Recipe) {
   if (!confirm(`Delete "${recipe.title}"?`)) return
   await recipeStore.deleteRecipe(recipe.id)
-  if (selectedRecipe.value?.id === recipe.id) selectedRecipe.value = null
+  closeDetail()
 }
 </script>
 
@@ -88,7 +104,7 @@ async function deleteRecipe(recipe: Recipe) {
           v-for="recipe in filtered"
           :key="recipe.id"
           class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-primary-300 hover:shadow-sm transition-all"
-          @click="selectedRecipe = recipe"
+          @click="openRecipe(recipe)"
         >
           <!-- Image preview -->
           <div
@@ -110,14 +126,6 @@ async function deleteRecipe(recipe: Recipe) {
                   <RecipeChip :recipe="recipe" />
                 </div>
               </div>
-              <button
-                class="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
-                @click.stop="deleteRecipe(recipe)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
             </div>
 
             <!-- URL preview -->
@@ -140,14 +148,28 @@ async function deleteRecipe(recipe: Recipe) {
     <BaseModal v-if="showCreateForm" title="New Recipe" @close="showCreateForm = false">
       <RecipeForm
         :plan-id="planId"
-        @created="showCreateForm = false"
+        @saved="showCreateForm = false"
         @cancel="showCreateForm = false"
       />
     </BaseModal>
 
-    <!-- Recipe detail modal -->
-    <BaseModal v-if="selectedRecipe" :title="selectedRecipe.title" @close="selectedRecipe = null">
-      <div class="p-4 space-y-4">
+    <!-- Recipe detail / edit modal -->
+    <BaseModal
+      v-if="selectedRecipe"
+      :title="editing ? 'Edit Recipe' : selectedRecipe.title"
+      @close="closeDetail"
+    >
+      <!-- Edit mode: form pre-populated with existing data -->
+      <RecipeForm
+        v-if="editing"
+        :plan-id="planId"
+        :recipe="selectedRecipe"
+        @saved="onRecipeSaved"
+        @cancel="editing = false"
+      />
+
+      <!-- View mode: read-only detail -->
+      <div v-else class="p-4 space-y-4">
         <RecipeChip :recipe="selectedRecipe" />
 
         <div v-if="selectedRecipe.kind === 'url' && selectedRecipe.url">
@@ -171,6 +193,19 @@ async function deleteRecipe(recipe: Recipe) {
           <RichTextEditor :model-value="selectedRecipe.content" :editable="false" />
         </div>
       </div>
+
+      <!-- Footer buttons — only shown in view mode -->
+      <template v-if="!editing" #footer>
+        <div class="flex items-center gap-2">
+          <BaseButton variant="danger" size="sm" @click="deleteRecipe(selectedRecipe!)">
+            Delete
+          </BaseButton>
+          <div class="flex-1" />
+          <BaseButton @click="editing = true">
+            Edit
+          </BaseButton>
+        </div>
+      </template>
     </BaseModal>
 
     <BottomNav />

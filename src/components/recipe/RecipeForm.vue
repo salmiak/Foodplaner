@@ -7,18 +7,23 @@ import { useRecipeStore } from '@/stores/recipe.store'
 import { useImageUpload } from '@/composables/useImageUpload'
 import type { Recipe } from '@/types/app.types'
 
-const props = defineProps<{ planId: string }>()
-const emit = defineEmits<{ created: [recipe: Recipe]; cancel: [] }>()
+const props = defineProps<{
+  planId: string
+  recipe?: Recipe   // if provided → edit mode
+}>()
+const emit = defineEmits<{ saved: [recipe: Recipe]; cancel: [] }>()
 
 const recipeStore = useRecipeStore()
 const { uploading, uploadImage, getImageUrl } = useImageUpload(props.planId)
 
-const kind = ref<'url' | 'image' | 'text'>('url')
-const title = ref('')
-const url = ref('')
-const content = ref<string | null>(null)
+const kind = ref<'url' | 'image' | 'text'>(props.recipe?.kind ?? 'url')
+const title = ref(props.recipe?.title ?? '')
+const url = ref(props.recipe?.url ?? '')
+const content = ref<string | null>(props.recipe?.content ?? null)
 const imageFile = ref<File | null>(null)
-const imagePreview = ref<string | null>(null)
+const imagePreview = ref<string | null>(
+  props.recipe?.image_path ? getImageUrl(props.recipe.image_path) : null,
+)
 const saving = ref(false)
 const error = ref<string | null>(null)
 
@@ -39,22 +44,39 @@ async function submit() {
   error.value = null
 
   try {
-    let imagePath: string | null = null
+    if (props.recipe) {
+      // ── Edit mode ──────────────────────────────────────────────────────────
+      let imagePath = props.recipe.image_path
+      if (kind.value === 'image' && imageFile.value) {
+        imagePath = await uploadImage(imageFile.value)
+      }
 
-    if (kind.value === 'image' && imageFile.value) {
-      imagePath = await uploadImage(imageFile.value)
+      const patch: Partial<Recipe> = {
+        title: title.value.trim(),
+        kind: kind.value,
+        url: kind.value === 'url' ? url.value : null,
+        image_path: kind.value === 'image' ? imagePath : null,
+        content: kind.value === 'text' ? content.value : null,
+      }
+      await recipeStore.updateRecipe(props.recipe.id, patch)
+      emit('saved', { ...props.recipe, ...patch })
+    } else {
+      // ── Create mode ────────────────────────────────────────────────────────
+      let imagePath: string | null = null
+      if (kind.value === 'image' && imageFile.value) {
+        imagePath = await uploadImage(imageFile.value)
+      }
+
+      const recipe = await recipeStore.createRecipe({
+        planId: props.planId,
+        title: title.value.trim(),
+        kind: kind.value,
+        url: kind.value === 'url' ? url.value : null,
+        imagePath,
+        content: kind.value === 'text' ? content.value : null,
+      })
+      emit('saved', recipe)
     }
-
-    const recipe = await recipeStore.createRecipe({
-      planId: props.planId,
-      title: title.value.trim(),
-      kind: kind.value,
-      url: kind.value === 'url' ? url.value : null,
-      imagePath,
-      content: kind.value === 'text' ? content.value : null,
-    })
-
-    emit('created', recipe)
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to save recipe'
   } finally {
@@ -65,7 +87,7 @@ async function submit() {
 
 <template>
   <div class="p-4 space-y-4">
-    <h3 class="font-semibold text-gray-900">New Recipe</h3>
+    <h3 class="font-semibold text-gray-900">{{ recipe ? 'Edit Recipe' : 'New Recipe' }}</h3>
 
     <BaseInput v-model="title" label="Recipe name" placeholder="e.g. Spaghetti Bolognese" />
 
@@ -108,7 +130,7 @@ async function submit() {
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span class="text-sm">Tap to upload photo</span>
+          <span class="text-sm">{{ imagePreview ? 'Tap to replace photo' : 'Tap to upload photo' }}</span>
         </div>
         <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
       </label>
@@ -128,7 +150,7 @@ async function submit() {
         class="flex-1"
         :loading="saving || uploading"
         @click="submit"
-      >Save Recipe</BaseButton>
+      >{{ recipe ? 'Save Changes' : 'Save Recipe' }}</BaseButton>
     </div>
   </div>
 </template>

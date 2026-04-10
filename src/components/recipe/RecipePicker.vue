@@ -25,7 +25,7 @@ const filtered = computed(() => {
   return results.filter((r) => !props.selectedIds.includes(r.id))
 })
 
-function onCreated(recipe: Recipe) {
+function onSaved(recipe: Recipe) {
   showForm.value = false
   emit('add', recipe.id)
 }
@@ -48,7 +48,7 @@ function onCreated(recipe: Recipe) {
     <RecipeForm
       v-if="showForm"
       :plan-id="planId"
-      @created="onCreated"
+      @saved="onSaved"
       @cancel="showForm = false"
     />
 
