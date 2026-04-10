@@ -53,15 +53,6 @@ vi.mock('@/components/meal/MealDoneToggle.vue', () => ({
   },
 }))
 
-vi.mock('@/components/meal/MealTransferMenu.vue', () => ({
-  default: {
-    name: 'MealTransferMenu',
-    props: ['mealId'],
-    emits: ['transferred'],
-    template: '<div />',
-  },
-}))
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

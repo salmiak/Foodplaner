@@ -5,7 +5,6 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import RecipePicker from '@/components/recipe/RecipePicker.vue'
 import MealDoneToggle from './MealDoneToggle.vue'
-import MealTransferMenu from './MealTransferMenu.vue'
 import { useMealStore } from '@/stores/meal.store'
 import type { Meal } from '@/types/app.types'
 
@@ -17,7 +16,6 @@ const mealStore = useMealStore()
 const title = ref(props.meal.title)
 const saving = ref(false)
 const deleting = ref(false)
-const showTransfer = ref(false)
 
 const selectedRecipeIds = computed(() =>
   props.meal.recipes?.map((r) => r.id) ?? [],
@@ -82,23 +80,6 @@ async function removeRecipe(recipeId: string) {
           @add="addRecipe"
           @remove="removeRecipe"
         />
-      </div>
-
-      <!-- Transfer section -->
-      <div>
-        <button
-          type="button"
-          class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-          @click="showTransfer = !showTransfer"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          Move to another week
-        </button>
-        <div v-if="showTransfer" class="mt-2">
-          <MealTransferMenu :meal-id="meal.id" @transferred="emit('close')" />
-        </div>
       </div>
     </div>
 
