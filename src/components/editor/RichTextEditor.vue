@@ -1,129 +1,63 @@
 <script setup lang="ts">
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import { watch } from 'vue'
-import { getExtensions } from '@/lib/tiptap'
-import type { JSONContent } from '@tiptap/vue-3'
+import { computed } from 'vue'
+import { marked } from 'marked'
 
 const props = defineProps<{
-  modelValue: JSONContent | null
+  modelValue: string | null
   placeholder?: string
   editable?: boolean
 }>()
 
-const emit = defineEmits<{ 'update:modelValue': [value: JSONContent | null] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>()
 
-const editor = useEditor({
-  content: props.modelValue ?? undefined,
-  editable: props.editable !== false,
-  extensions: getExtensions(props.placeholder),
-  onUpdate({ editor }) {
-    emit('update:modelValue', editor.isEmpty ? null : editor.getJSON())
-  },
+const rendered = computed(() => {
+  if (!props.modelValue?.trim()) return ''
+  return marked.parse(props.modelValue) as string
 })
 
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (!editor.value) return
-    const current = editor.value.getJSON()
-    if (JSON.stringify(current) !== JSON.stringify(val)) {
-      if (val) {
-        editor.value.commands.setContent(val)
-      } else {
-        editor.value.commands.clearContent()
-      }
-    }
-  },
-)
-
-watch(
-  () => props.editable,
-  (val) => editor.value?.setEditable(val !== false),
-)
+function onInput(e: Event) {
+  const val = (e.target as HTMLTextAreaElement).value
+  emit('update:modelValue', val || null)
+}
 </script>
 
 <template>
-  <div
-    class="tiptap-wrapper"
-    :class="editable !== false ? 'ring-1 ring-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-primary-500 bg-white' : ''"
-  >
-    <!-- Toolbar (only when editable) -->
-    <div
-      v-if="editable !== false && editor"
-      class="flex items-center gap-1 px-2 py-1.5 border-b border-gray-100 flex-wrap"
-    >
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-gray-100 text-gray-600 font-bold text-sm min-w-[30px]"
-        :class="{ 'bg-gray-100': editor.isActive('bold') }"
-        @click="editor.chain().focus().toggleBold().run()"
-        title="Bold"
-      >B</button>
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-gray-100 text-gray-600 italic text-sm min-w-[30px]"
-        :class="{ 'bg-gray-100': editor.isActive('italic') }"
-        @click="editor.chain().focus().toggleItalic().run()"
-        title="Italic"
-      >I</button>
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-gray-100 text-gray-600 text-sm min-w-[30px]"
-        :class="{ 'bg-gray-100': editor.isActive('bulletList') }"
-        @click="editor.chain().focus().toggleBulletList().run()"
-        title="Bullet list"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-gray-100 text-gray-600 text-sm min-w-[30px]"
-        :class="{ 'bg-gray-100': editor.isActive('orderedList') }"
-        @click="editor.chain().focus().toggleOrderedList().run()"
-        title="Numbered list"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h10M7 16h10M3 8h.01M3 12h.01M3 16h.01" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        class="p-1.5 rounded hover:bg-gray-100 text-gray-600 text-sm min-w-[30px]"
-        :class="{ 'bg-gray-100': editor.isActive('heading', { level: 2 }) }"
-        @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-        title="Heading"
-      >H</button>
-    </div>
+  <!-- Edit mode: plain textarea accepting Markdown -->
+  <textarea
+    v-if="editable !== false"
+    :value="modelValue ?? ''"
+    :placeholder="placeholder"
+    rows="4"
+    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+    @input="onInput"
+  />
 
-    <EditorContent
-      :editor="editor"
-      class="prose prose-sm max-w-none px-3 py-2 min-h-[80px] focus:outline-none"
-    />
-  </div>
+  <!-- Read-only mode: rendered Markdown -->
+  <div
+    v-else-if="rendered"
+    class="prose prose-sm max-w-none"
+    v-html="rendered"
+  />
 </template>
 
 <style>
-.tiptap-wrapper .ProseMirror {
-  outline: none;
-  min-height: 80px;
-}
-.tiptap-wrapper .ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: #9ca3af;
-  float: left;
-  pointer-events: none;
-  height: 0;
-}
-.tiptap-wrapper .ProseMirror > * + * {
-  margin-top: 0.5em;
-}
-.tiptap-wrapper .ProseMirror ul, .tiptap-wrapper .ProseMirror ol {
-  padding-left: 1.5em;
-}
-.tiptap-wrapper .ProseMirror ul { list-style-type: disc; }
-.tiptap-wrapper .ProseMirror ol { list-style-type: decimal; }
-.tiptap-wrapper .ProseMirror h2 { font-size: 1.1em; font-weight: 600; }
-.tiptap-wrapper .ProseMirror a { color: #16a34a; text-decoration: underline; }
+/* Basic prose styles without requiring @tailwindcss/typography */
+.prose { color: #374151; line-height: 1.6; }
+.prose p { margin: 0 0 0.5em; }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { font-weight: 600; }
+.prose em { font-style: italic; }
+.prose ul { list-style-type: disc; padding-left: 1.5em; margin: 0.25em 0; }
+.prose ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.25em 0; }
+.prose li { margin: 0.1em 0; }
+.prose h1, .prose h2, .prose h3 { font-weight: 600; margin: 0.5em 0 0.25em; }
+.prose h1 { font-size: 1.2em; }
+.prose h2 { font-size: 1.1em; }
+.prose h3 { font-size: 1em; }
+.prose a { color: #16a34a; text-decoration: underline; }
+.prose code { background: #f3f4f6; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
+.prose pre { background: #f3f4f6; padding: 0.75em 1em; border-radius: 8px; overflow-x: auto; }
+.prose pre code { background: none; padding: 0; }
+.prose blockquote { border-left: 3px solid #d1d5db; padding-left: 1em; color: #6b7280; margin: 0.5em 0; }
+.prose hr { border: none; border-top: 1px solid #e5e7eb; margin: 0.75em 0; }
 </style>

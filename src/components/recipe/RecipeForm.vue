@@ -6,7 +6,6 @@ import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import { useRecipeStore } from '@/stores/recipe.store'
 import { useImageUpload } from '@/composables/useImageUpload'
 import type { Recipe } from '@/types/app.types'
-import type { JSONContent } from '@tiptap/vue-3'
 
 const props = defineProps<{ planId: string }>()
 const emit = defineEmits<{ created: [recipe: Recipe]; cancel: [] }>()
@@ -17,7 +16,7 @@ const { uploading, uploadImage, getImageUrl } = useImageUpload(props.planId)
 const kind = ref<'url' | 'image' | 'text'>('url')
 const title = ref('')
 const url = ref('')
-const content = ref<JSONContent | null>(null)
+const content = ref<string | null>(null)
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const saving = ref(false)

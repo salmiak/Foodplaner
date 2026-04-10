@@ -7,7 +7,6 @@ import RecipePicker from '@/components/recipe/RecipePicker.vue'
 import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import { useMealStore } from '@/stores/meal.store'
 import { useWeekStore } from '@/stores/week.store'
-import type { JSONContent } from '@tiptap/vue-3'
 
 const props = defineProps<{
   planId: string
@@ -20,7 +19,7 @@ const weekStore = useWeekStore()
 const open = ref(false)
 const title = ref('')
 const selectedRecipeIds = ref<string[]>([])
-const comment = ref<JSONContent | null>(null)
+const comment = ref<string | null>(null)
 const saving = ref(false)
 
 function reset() {

@@ -41,7 +41,7 @@ export const useRecipeStore = defineStore('recipe', () => {
     kind: 'url' | 'image' | 'text'
     url?: string | null
     imagePath?: string | null
-    content?: object | null
+    content?: string | null
   }): Promise<Recipe> {
     const authStore = useAuthStore()
 

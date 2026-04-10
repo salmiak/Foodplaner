@@ -9,7 +9,6 @@ import MealDoneToggle from './MealDoneToggle.vue'
 import MealTransferMenu from './MealTransferMenu.vue'
 import { useMealStore } from '@/stores/meal.store'
 import type { Meal } from '@/types/app.types'
-import type { JSONContent } from '@tiptap/vue-3'
 
 const props = defineProps<{ meal: Meal; planId: string }>()
 const emit = defineEmits<{ close: [] }>()
@@ -17,7 +16,7 @@ const emit = defineEmits<{ close: [] }>()
 const mealStore = useMealStore()
 
 const title = ref(props.meal.title)
-const comment = ref<JSONContent | null>(props.meal.comment)
+const comment = ref<string | null>(props.meal.comment)
 const saving = ref(false)
 const deleting = ref(false)
 const showTransfer = ref(false)

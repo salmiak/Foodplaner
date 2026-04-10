@@ -1,5 +1,3 @@
-import type { JSONContent } from '@tiptap/vue-3'
-
 export interface Plan {
   id: string
   name: string
@@ -31,7 +29,7 @@ export interface Meal {
   plan_id: string
   day_of_week: number | null  // 1=Mon … 7=Sun, null=unassigned
   title: string
-  comment: JSONContent | null
+  comment: string | null      // Markdown text
   is_done: boolean
   sort_order: number
   created_by: string | null
@@ -48,7 +46,7 @@ export interface Recipe {
   kind: 'url' | 'image' | 'text'
   url: string | null
   image_path: string | null
-  content: JSONContent | null
+  content: string | null      // Markdown text (when kind = 'text')
   created_by: string | null
   created_at: string
   updated_at: string

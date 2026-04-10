@@ -3,7 +3,6 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import MealDetailModal from './MealDetailModal.vue'
 import type { Meal } from '@/types/app.types'
-import type { JSONContent } from '@tiptap/vue-3'
 
 // ---------------------------------------------------------------------------
 // Store mocks (hoisted so vi.mock factories can reference them)
@@ -25,7 +24,7 @@ vi.mock('@/stores/meal.store', () => ({
 }))
 
 // ---------------------------------------------------------------------------
-// Component stubs — keep heavy deps (Tiptap, Teleport) out of tests
+// Component stubs — keep heavy deps out of tests
 // ---------------------------------------------------------------------------
 vi.mock('@/components/ui/BaseModal.vue', () => ({
   default: {
@@ -93,10 +92,7 @@ function makeMeal(overrides: Partial<Meal> = {}): Meal {
   }
 }
 
-const noteContent: JSONContent = {
-  type: 'doc',
-  content: [{ type: 'paragraph', content: [{ type: 'text', text: 'My notes' }] }],
-}
+const noteContent = '**My notes**\n- item 1\n- item 2'
 
 function makeRecipe(id = 'r1') {
   return {

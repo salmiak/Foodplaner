@@ -3,7 +3,6 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import AddMealButton from './AddMealButton.vue'
 import type { Meal } from '@/types/app.types'
-import type { JSONContent } from '@tiptap/vue-3'
 
 // ---------------------------------------------------------------------------
 // Store mocks
@@ -71,10 +70,7 @@ vi.mock('@/components/recipe/RecipePicker.vue', () => ({
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const noteContent: JSONContent = {
-  type: 'doc',
-  content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Add salt' }] }],
-}
+const noteContent = '**Add salt**\nCook for 20 min'
 
 function mountButton(dayOfWeek: number | null = null) {
   return mount(AddMealButton, { props: { planId: 'plan-1', dayOfWeek } })
