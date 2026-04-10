@@ -16,7 +16,8 @@ const emit = defineEmits<{ saved: [recipe: Recipe]; cancel: [] }>()
 const recipeStore = useRecipeStore()
 const { uploading, uploadImage, getImageUrl } = useImageUpload(props.planId)
 
-const kind = ref<'url' | 'image' | 'text'>(props.recipe?.kind ?? 'url')
+// 'text' means no attachment — it's the default
+const kind = ref<'url' | 'image' | 'text'>(props.recipe?.kind ?? 'text')
 const title = ref(props.recipe?.title ?? '')
 const url = ref(props.recipe?.url ?? '')
 const content = ref<string | null>(props.recipe?.content ?? null)
@@ -56,7 +57,7 @@ async function submit() {
         kind: kind.value,
         url: kind.value === 'url' ? url.value : null,
         image_path: kind.value === 'image' ? imagePath : null,
-        content: kind.value === 'text' ? content.value : null,
+        content: content.value,
       }
       await recipeStore.updateRecipe(props.recipe.id, patch)
       emit('saved', { ...props.recipe, ...patch })
@@ -73,7 +74,7 @@ async function submit() {
         kind: kind.value,
         url: kind.value === 'url' ? url.value : null,
         imagePath,
-        content: kind.value === 'text' ? content.value : null,
+        content: content.value,
       })
       emit('saved', recipe)
     }
@@ -91,12 +92,18 @@ async function submit() {
 
     <BaseInput v-model="title" label="Recipe name" placeholder="e.g. Spaghetti Bolognese" />
 
-    <!-- Type selector -->
+    <!-- Notes — always shown -->
+    <div class="space-y-1">
+      <p class="text-sm font-medium text-gray-700">Notes</p>
+      <RichTextEditor v-model="content" placeholder="Ingredients, instructions, tips..." />
+    </div>
+
+    <!-- Attachment selector -->
     <div>
-      <p class="text-sm font-medium text-gray-700 mb-2">Type</p>
+      <p class="text-sm font-medium text-gray-700 mb-2">Attachment</p>
       <div class="flex gap-2">
         <button
-          v-for="k in (['url', 'image', 'text'] as const)"
+          v-for="[k, label] in ([['text', 'None'], ['url', 'Link'], ['image', 'Photo']] as const)"
           :key="k"
           type="button"
           class="flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition-colors"
@@ -105,7 +112,7 @@ async function submit() {
             : 'border-gray-200 text-gray-600 hover:border-gray-300'"
           @click="kind = k"
         >
-          {{ k === 'url' ? 'Link' : k === 'image' ? 'Photo' : 'Text' }}
+          {{ label }}
         </button>
       </div>
     </div>
@@ -134,12 +141,6 @@ async function submit() {
         </div>
         <input type="file" accept="image/*" class="hidden" @change="onImageSelect" />
       </label>
-    </div>
-
-    <!-- Text field -->
-    <div v-if="kind === 'text'" class="space-y-1">
-      <p class="text-sm font-medium text-gray-700">Recipe text</p>
-      <RichTextEditor v-model="content" placeholder="Write your recipe here..." />
     </div>
 
     <p v-if="error" class="text-sm text-red-600">{{ error }}</p>

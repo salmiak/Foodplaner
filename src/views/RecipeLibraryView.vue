@@ -189,7 +189,8 @@ async function deleteRecipe(recipe: Recipe) {
           />
         </div>
 
-        <div v-if="selectedRecipe.kind === 'text' && selectedRecipe.content">
+        <!-- Notes shown for any recipe that has content -->
+        <div v-if="selectedRecipe.content">
           <RichTextEditor :model-value="selectedRecipe.content" :editable="false" />
         </div>
       </div>
