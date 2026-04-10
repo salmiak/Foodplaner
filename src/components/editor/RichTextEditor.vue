@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>()
 
+const isEditable = computed(() => props.editable !== false)
+
 const rendered = computed(() => {
   if (!props.modelValue?.trim()) return ''
   return marked.parse(props.modelValue) as string
@@ -22,26 +24,27 @@ function onInput(e: Event) {
 </script>
 
 <template>
-  <!-- Edit mode: plain textarea accepting Markdown -->
-  <textarea
-    v-if="editable !== false"
-    :value="modelValue ?? ''"
-    :placeholder="placeholder"
-    rows="4"
-    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-    @input="onInput"
-  />
+  <div class="w-full">
+    <!-- Edit mode: plain textarea accepting Markdown -->
+    <textarea
+      v-if="isEditable"
+      :value="modelValue ?? ''"
+      :placeholder="placeholder"
+      rows="4"
+      class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+      @input="onInput"
+    />
 
-  <!-- Read-only mode: rendered Markdown -->
-  <div
-    v-else-if="rendered"
-    class="prose prose-sm max-w-none"
-    v-html="rendered"
-  />
+    <!-- Read-only mode: rendered Markdown -->
+    <div
+      v-else-if="rendered"
+      class="prose prose-sm max-w-none"
+      v-html="rendered"
+    />
+  </div>
 </template>
 
 <style>
-/* Basic prose styles without requiring @tailwindcss/typography */
 .prose { color: #374151; line-height: 1.6; }
 .prose p { margin: 0 0 0.5em; }
 .prose p:last-child { margin-bottom: 0; }
