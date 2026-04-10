@@ -9,7 +9,6 @@ import BaseSpinner from '@/components/ui/BaseSpinner.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import RecipeChip from '@/components/recipe/RecipeChip.vue'
 import RecipeForm from '@/components/recipe/RecipeForm.vue'
-import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import { useRecipeStore } from '@/stores/recipe.store'
 import { usePlanStore } from '@/stores/plan.store'
 import type { Recipe } from '@/types/app.types'
@@ -187,11 +186,6 @@ async function deleteRecipe(recipe: Recipe) {
             :alt="selectedRecipe.title"
             class="w-full rounded-xl"
           />
-        </div>
-
-        <!-- Notes shown for any recipe that has content -->
-        <div v-if="selectedRecipe.content">
-          <RichTextEditor :model-value="selectedRecipe.content" :editable="false" />
         </div>
       </div>
 

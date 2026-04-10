@@ -37,7 +37,6 @@ function makeMeal(overrides: Partial<Meal> = {}): Meal {
     plan_id: 'plan-1',
     day_of_week: 1,
     title: 'Pasta',
-    comment: null,
     is_done: false,
     sort_order: 0,
     created_by: 'user-1',
@@ -134,7 +133,7 @@ describe('applyRealtimeEvent', () => {
   it('UPDATE preserves recipes array', () => {
     const recipe = {
       id: 'r1', plan_id: 'p1', title: 'Sauce', kind: 'text' as const,
-      url: null, image_path: null, content: null, created_by: null, created_at: '', updated_at: '',
+      url: null, image_path: null, created_by: null, created_at: '', updated_at: '',
     }
     const store = useMealStore()
     store.meals = [makeMeal({ id: 'meal-1', recipes: [recipe] })]

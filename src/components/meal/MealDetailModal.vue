@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
-import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import RecipePicker from '@/components/recipe/RecipePicker.vue'
 import MealDoneToggle from './MealDoneToggle.vue'
 import MealTransferMenu from './MealTransferMenu.vue'
@@ -16,7 +15,6 @@ const emit = defineEmits<{ close: [] }>()
 const mealStore = useMealStore()
 
 const title = ref(props.meal.title)
-const comment = ref<string | null>(props.meal.comment)
 const saving = ref(false)
 const deleting = ref(false)
 const showTransfer = ref(false)
@@ -34,7 +32,6 @@ async function save() {
   try {
     await mealStore.updateMeal(props.meal.id, {
       title: title.value.trim() || props.meal.title,
-      comment: comment.value,
     })
     emit('close')
   } finally {
@@ -84,15 +81,6 @@ async function removeRecipe(recipeId: string) {
           :selected-ids="selectedRecipeIds"
           @add="addRecipe"
           @remove="removeRecipe"
-        />
-      </div>
-
-      <!-- Comment section -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Notes</h3>
-        <RichTextEditor
-          v-model="comment"
-          placeholder="Add notes, serving suggestions, substitutions..."
         />
       </div>
 

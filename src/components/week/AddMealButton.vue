@@ -4,7 +4,6 @@ import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import RecipePicker from '@/components/recipe/RecipePicker.vue'
-import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import { useMealStore } from '@/stores/meal.store'
 import { useWeekStore } from '@/stores/week.store'
 
@@ -19,13 +18,11 @@ const weekStore = useWeekStore()
 const open = ref(false)
 const title = ref('')
 const selectedRecipeIds = ref<string[]>([])
-const comment = ref<string | null>(null)
 const saving = ref(false)
 
 function reset() {
   title.value = ''
   selectedRecipeIds.value = []
-  comment.value = null
 }
 
 function close() {
@@ -55,11 +52,6 @@ async function submit() {
     // Add selected recipes sequentially
     for (const recipeId of selectedRecipeIds.value) {
       await mealStore.addRecipeToMeal(meal.id, recipeId)
-    }
-
-    // Save notes if provided
-    if (comment.value) {
-      await mealStore.updateMeal(meal.id, { comment: comment.value })
     }
 
     close()
@@ -99,15 +91,6 @@ async function submit() {
           :selected-ids="selectedRecipeIds"
           @add="addRecipe"
           @remove="removeRecipe"
-        />
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-700 mb-2">Anteckningar</h3>
-        <RichTextEditor
-          v-model="comment"
-          placeholder="Tillbehör, tips, portioner..."
         />
       </div>
     </div>

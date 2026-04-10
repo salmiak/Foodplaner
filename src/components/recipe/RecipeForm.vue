@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import RichTextEditor from '@/components/editor/RichTextEditor.vue'
 import { useRecipeStore } from '@/stores/recipe.store'
 import { useImageUpload } from '@/composables/useImageUpload'
 import type { Recipe } from '@/types/app.types'
@@ -20,7 +19,6 @@ const { uploading, uploadImage, getImageUrl } = useImageUpload(props.planId)
 const kind = ref<'url' | 'image' | 'text'>(props.recipe?.kind ?? 'text')
 const title = ref(props.recipe?.title ?? '')
 const url = ref(props.recipe?.url ?? '')
-const content = ref<string | null>(props.recipe?.content ?? null)
 const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(
   props.recipe?.image_path ? getImageUrl(props.recipe.image_path) : null,
@@ -57,7 +55,6 @@ async function submit() {
         kind: kind.value,
         url: kind.value === 'url' ? url.value : null,
         image_path: kind.value === 'image' ? imagePath : null,
-        content: content.value,
       }
       await recipeStore.updateRecipe(props.recipe.id, patch)
       emit('saved', { ...props.recipe, ...patch })
@@ -74,7 +71,6 @@ async function submit() {
         kind: kind.value,
         url: kind.value === 'url' ? url.value : null,
         imagePath,
-        content: content.value,
       })
       emit('saved', recipe)
     }
@@ -91,12 +87,6 @@ async function submit() {
     <h3 class="font-semibold text-gray-900">{{ recipe ? 'Edit Recipe' : 'New Recipe' }}</h3>
 
     <BaseInput v-model="title" label="Recipe name" placeholder="e.g. Spaghetti Bolognese" />
-
-    <!-- Notes — always shown -->
-    <div class="space-y-1">
-      <p class="text-sm font-medium text-gray-700">Notes</p>
-      <RichTextEditor v-model="content" placeholder="Ingredients, instructions, tips..." />
-    </div>
 
     <!-- Attachment selector -->
     <div>

@@ -29,7 +29,6 @@ export interface Meal {
   plan_id: string
   day_of_week: number | null  // 1=Mon … 7=Sun, null=unassigned
   title: string
-  comment: string | null      // Markdown text
   is_done: boolean
   sort_order: number
   created_by: string | null
@@ -46,7 +45,6 @@ export interface Recipe {
   kind: 'url' | 'image' | 'text'
   url: string | null
   image_path: string | null
-  content: string | null      // Markdown text (when kind = 'text')
   created_by: string | null
   created_at: string
   updated_at: string
@@ -96,7 +94,6 @@ export interface MealSuggestion {
     | { existing_recipe_id: string }
     | { new_recipe: Partial<Recipe> }
   >
-  comment: string | null
 }
 
 export interface SuggestMealsResponse {

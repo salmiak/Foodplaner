@@ -35,15 +35,6 @@ vi.mock('@/components/ui/BaseModal.vue', () => ({
   },
 }))
 
-vi.mock('@/components/editor/RichTextEditor.vue', () => ({
-  default: {
-    name: 'RichTextEditor',
-    props: ['modelValue', 'placeholder', 'editable'],
-    emits: ['update:modelValue'],
-    template: '<div data-testid="editor" />',
-  },
-}))
-
 vi.mock('@/components/recipe/RecipePicker.vue', () => ({
   default: {
     name: 'RecipePicker',
@@ -81,7 +72,6 @@ function makeMeal(overrides: Partial<Meal> = {}): Meal {
     plan_id: 'plan-1',
     day_of_week: 1,
     title: 'Pasta',
-    comment: null,
     is_done: false,
     sort_order: 0,
     created_by: 'user-1',
@@ -92,8 +82,6 @@ function makeMeal(overrides: Partial<Meal> = {}): Meal {
   }
 }
 
-const noteContent = '**My notes**\n- item 1\n- item 2'
-
 function makeRecipe(id = 'r1') {
   return {
     id,
@@ -102,7 +90,6 @@ function makeRecipe(id = 'r1') {
     kind: 'text' as const,
     url: null,
     image_path: null,
-    content: null,
     created_by: null,
     created_at: '',
     updated_at: '',
@@ -126,100 +113,38 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
-describe('MealDetailModal — comment (notes)', () => {
-  it('passes existing meal comment to the editor on open', () => {
-    const wrapper = mountModal(makeMeal({ comment: noteContent }))
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
-    expect(editor.props('modelValue')).toEqual(noteContent)
-  })
-
-  it('reflects typed content in editor modelValue', async () => {
+describe('MealDetailModal — save', () => {
+  it('calls updateMeal with title on save', async () => {
     const wrapper = mountModal()
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
+    const input = wrapper.find('input')
+    await input.setValue('New title')
 
-    await editor.vm.$emit('update:modelValue', noteContent)
+    await findSaveBtn(wrapper)!.trigger('click')
+    await flushPromises()
 
-    expect(editor.props('modelValue')).toEqual(noteContent)
+    expect(mockUpdateMeal).toHaveBeenCalledWith(
+      'meal-1',
+      expect.objectContaining({ title: 'New title' }),
+    )
   })
 
-  it('does NOT reset comment when meal.recipes changes (recipe added)', async () => {
-    const meal = makeMeal()
-    const wrapper = mountModal(meal)
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
-
-    // Simulate user typing notes
-    await editor.vm.$emit('update:modelValue', noteContent)
-
-    // Simulate recipe being added: the meal object in the store gets its
-    // recipes array mutated, causing the prop reference to change.
-    await wrapper.setProps({ meal: { ...meal, recipes: [makeRecipe()] } })
-
-    // Comment must NOT have been reset to null
-    expect(editor.props('modelValue')).toEqual(noteContent)
-  })
-
-  it('syncs title from prop change (realtime) but leaves comment intact', async () => {
+  it('syncs title from prop change (realtime)', async () => {
     const meal = makeMeal({ title: 'Original' })
     const wrapper = mountModal(meal)
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
 
-    // User types notes
-    await editor.vm.$emit('update:modelValue', noteContent)
-
-    // Another user renames the meal via realtime
     await wrapper.setProps({ meal: { ...meal, title: 'Renamed by peer' } })
 
-    // Comment still intact
-    expect(editor.props('modelValue')).toEqual(noteContent)
-
-    // Title input should show the updated title
     expect(wrapper.find('input').element.value).toBe('Renamed by peer')
   })
 
-  it('includes comment in save payload', async () => {
-    const wrapper = mountModal()
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
-    await editor.vm.$emit('update:modelValue', noteContent)
-
-    await findSaveBtn(wrapper)!.trigger('click')
-    await flushPromises()
-
-    expect(mockUpdateMeal).toHaveBeenCalledWith(
-      'meal-1',
-      expect.objectContaining({ comment: noteContent }),
-    )
-  })
-
-  it('saves null comment when editor content is cleared', async () => {
-    const wrapper = mountModal(makeMeal({ comment: noteContent }))
-    const editor = wrapper.findComponent({ name: 'RichTextEditor' })
-
-    // Editor emits null when user clears content
-    await editor.vm.$emit('update:modelValue', null)
-
-    await findSaveBtn(wrapper)!.trigger('click')
-    await flushPromises()
-
-    expect(mockUpdateMeal).toHaveBeenCalledWith(
-      'meal-1',
-      expect.objectContaining({ comment: null }),
-    )
-  })
-
-  it('preserves pre-existing comment across multiple recipe adds', async () => {
-    const meal = makeMeal({ comment: noteContent })
+  it('does not reset title when recipes change', async () => {
+    const meal = makeMeal()
     const wrapper = mountModal(meal)
+    const input = wrapper.find('input')
+    await input.setValue('My edited title')
 
-    // Add two recipes in sequence (prop changes twice)
-    await wrapper.setProps({ meal: { ...meal, recipes: [makeRecipe('r1')] } })
-    await wrapper.setProps({ meal: { ...meal, recipes: [makeRecipe('r1'), makeRecipe('r2')] } })
+    await wrapper.setProps({ meal: { ...meal, recipes: [makeRecipe()] } })
 
-    await findSaveBtn(wrapper)!.trigger('click')
-    await flushPromises()
-
-    expect(mockUpdateMeal).toHaveBeenCalledWith(
-      'meal-1',
-      expect.objectContaining({ comment: noteContent }),
-    )
+    expect(input.element.value).toBe('My edited title')
   })
 })

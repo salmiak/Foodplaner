@@ -41,7 +41,6 @@ export const useRecipeStore = defineStore('recipe', () => {
     kind: 'url' | 'image' | 'text'
     url?: string | null
     imagePath?: string | null
-    content?: string | null
   }): Promise<Recipe> {
     const authStore = useAuthStore()
 
@@ -53,7 +52,6 @@ export const useRecipeStore = defineStore('recipe', () => {
         kind: payload.kind,
         url: payload.url ?? null,
         image_path: payload.imagePath ?? null,
-        content: payload.content ?? null,
         created_by: authStore.userId,
       })
       .select()
