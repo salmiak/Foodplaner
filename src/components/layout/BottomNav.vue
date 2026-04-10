@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePlanStore } from '@/stores/plan.store'
 import { useWeekStore } from '@/stores/week.store'
 
+const appVersion = __APP_VERSION__
 const appCommit = __APP_COMMIT__
 
 const route = useRoute()
@@ -76,6 +77,6 @@ const tabs = computed(() => [
       <span class="text-xs mt-0.5">{{ tab.label }}</span>
     </button>
     </div>
-    <p class="text-center text-[10px] text-gray-300 leading-none pb-1">{{ appCommit }}</p>
+    <p class="text-center text-[10px] text-gray-300 leading-none pb-1">v{{ appVersion }} · {{ appCommit }}</p>
   </nav>
 </template>

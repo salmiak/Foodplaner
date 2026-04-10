@@ -12,9 +12,18 @@ const commitHash = (() => {
   }
 })()
 
+const commitCount = (() => {
+  try {
+    return execSync('git rev-list --count HEAD').toString().trim()
+  } catch {
+    return '0'
+  }
+})()
+
 export default defineConfig({
   define: {
     __APP_COMMIT__: JSON.stringify(commitHash),
+    __APP_VERSION__: JSON.stringify(commitCount),
   },
   plugins: [
     vue(),
