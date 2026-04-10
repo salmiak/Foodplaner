@@ -26,10 +26,9 @@ const selectedRecipeIds = computed(() =>
   props.meal.recipes?.map((r) => r.id) ?? [],
 )
 
-watch(() => props.meal, (meal) => {
-  title.value = meal.title
-  comment.value = meal.comment
-}, { deep: true })
+watch(() => props.meal.title, (newTitle) => {
+  title.value = newTitle
+})
 
 async function save() {
   saving.value = true

@@ -27,7 +27,11 @@ watch(
     if (!editor.value) return
     const current = editor.value.getJSON()
     if (JSON.stringify(current) !== JSON.stringify(val)) {
-      editor.value.commands.setContent(val ?? '')
+      if (val) {
+        editor.value.commands.setContent(val)
+      } else {
+        editor.value.commands.clearContent()
+      }
     }
   },
 )
