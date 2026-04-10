@@ -10,8 +10,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | null] }>()
 
-const isEditable = computed(() => props.editable !== false)
-
 const rendered = computed(() => {
   if (!props.modelValue?.trim()) return ''
   return marked.parse(props.modelValue) as string
@@ -27,7 +25,7 @@ function onInput(e: Event) {
   <div class="w-full">
     <!-- Edit mode: plain textarea accepting Markdown -->
     <textarea
-      v-if="isEditable"
+      v-if="editable !== false"
       :placeholder="placeholder"
       rows="4"
       class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
