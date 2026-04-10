@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePlanStore } from '@/stores/plan.store'
 import { useWeekStore } from '@/stores/week.store'
 
+const appCommit = __APP_COMMIT__
+
 const route = useRoute()
 const router = useRouter()
 const planStore = usePlanStore()
@@ -52,7 +54,8 @@ const tabs = computed(() => [
 </script>
 
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 flex pb-safe-bottom">
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 pb-safe-bottom">
+    <div class="flex">
     <button
       v-for="tab in tabs"
       :key="tab.name"
@@ -72,5 +75,7 @@ const tabs = computed(() => [
       </svg>
       <span class="text-xs mt-0.5">{{ tab.label }}</span>
     </button>
+    </div>
+    <p class="text-center text-[10px] text-gray-300 leading-none pb-1">{{ appCommit }}</p>
   </nav>
 </template>
