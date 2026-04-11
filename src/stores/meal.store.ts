@@ -165,17 +165,53 @@ export const useMealStore = defineStore('meal', () => {
   }
 
   async function transferMeal(mealId: string, direction: 'prev' | 'next') {
-    const { data, error } = await supabase.functions.invoke('transfer-meal', {
-      body: { meal_id: mealId, direction },
-    })
+    const meal = meals.value.find((m) => m.id === mealId)
+    if (!meal) throw new Error('Meal not found')
 
-    if (error) throw new Error(error.message || 'Transfer failed')
+    // Get current week
+    const { data: week, error: weekError } = await supabase
+      .from('weeks')
+      .select('*')
+      .eq('id', meal.week_id)
+      .single()
+    if (weekError || !week) throw new Error('Week not found')
 
-    // Remove meal from current view (it's now in another week)
+    // Calculate target year/week
+    const { year: targetYear, weekNumber: targetWeekNumber } =
+      adjacentWeek(week.year, week.week_number, direction)
+
+    // Find or create target week
+    let targetWeekId: string
+    const { data: existing } = await supabase
+      .from('weeks')
+      .select('id')
+      .eq('plan_id', meal.plan_id)
+      .eq('year', targetYear)
+      .eq('week_number', targetWeekNumber)
+      .maybeSingle()
+
+    if (existing) {
+      targetWeekId = existing.id
+    } else {
+      const { data: created, error: createError } = await supabase
+        .from('weeks')
+        .insert({ plan_id: meal.plan_id, year: targetYear, week_number: targetWeekNumber })
+        .select('id')
+        .single()
+      if (createError || !created) throw new Error('Failed to create target week')
+      targetWeekId = created.id
+    }
+
+    // Move the meal
+    const { error: updateError } = await supabase
+      .from('meals')
+      .update({ week_id: targetWeekId })
+      .eq('id', mealId)
+    if (updateError) throw new Error('Failed to transfer meal')
+
+    // Remove from current week view
     const index = meals.value.findIndex((m) => m.id === mealId)
     if (index >= 0) meals.value.splice(index, 1)
-
-    return data
   }
 
   function applyRealtimeEvent(payload: RealtimePostgresChangesPayload<Meal>) {
@@ -221,3 +257,20 @@ export const useMealStore = defineStore('meal', () => {
     clear,
   }
 })
+
+// ─── ISO week helpers ──────────────────────────────────────────────────────────
+
+function isoWeeksInYear(year: number): number {
+  const jan1 = new Date(year, 0, 1).getDay()
+  const dec31 = new Date(year, 11, 31).getDay()
+  return jan1 === 4 || dec31 === 4 ? 53 : 52
+}
+
+function adjacentWeek(year: number, weekNumber: number, direction: 'prev' | 'next') {
+  const delta = direction === 'next' ? 1 : -1
+  let w = weekNumber + delta
+  let y = year
+  if (w < 1) { y -= 1; w = isoWeeksInYear(y) }
+  else if (w > isoWeeksInYear(y)) { y += 1; w = 1 }
+  return { year: y, weekNumber: w }
+}
